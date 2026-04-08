@@ -55,6 +55,11 @@ app.get("/addon/manifest.json", (req, res) => {
   res.json(addonInterface.manifest);
 });
 
+// Endpoint para InstallAddon de Stremio Web
+app.get("/addon", (req, res) => {
+  res.json({ manifest: addonInterface.manifest });
+});
+
 app.get("/addon/:resource/:type/:id.json", async (req, res) => {
   const { resource, type, id } = req.params;
   try {
