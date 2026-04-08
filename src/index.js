@@ -3,15 +3,10 @@ require("./firebase"); // Inicializa Firebase al arrancar
 
 const express         = require("express");
 const { serveHTTP }   = require("stremio-addon-sdk");
-const { builder }     = require("./addon");
-const {
-  helmetMiddleware,
-  corsMiddleware,
-  limiterGeneral,
-} = require("../middleware/seguridad");
-
-const deviceCodesRouter = require("../routes/device-codes");
-const webhooksRouter    = require("../routes/webhooks");
+const { builder } = require("./addon");
+const { helmetMiddleware, corsMiddleware, limiterGeneral } = require("../../middleware/seguridad");
+const deviceCodesRouter = require("../../routes/device-codes");
+const webhooksRouter = require("../../routes/webhooks");
 
 const app = express();
 

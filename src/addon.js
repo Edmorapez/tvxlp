@@ -1,5 +1,5 @@
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
-const { validarSuscripcion }      = require("../services/suscripciones");
+const { validarSuscripcion } = require("../../services/suscripciones");
 
 // ─── Manifest del Addon ───────────────────────────────────────────────────────
 const builder = new addonBuilder({
