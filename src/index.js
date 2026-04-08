@@ -52,7 +52,15 @@ app.get("/activar", (req, res) => {
 const addonInterface = builder.getInterface();
 
 app.get("/addon/manifest.json", (req, res) => {
-  res.json(addonInterface.manifest);
+  const manifest = {
+    ...addonInterface.manifest,
+    transportUrl: "https://tvxlp-backend.onrender.com/addon/manifest.json",
+    behaviorHints: {
+      ...addonInterface.manifest.behaviorHints,
+      configurable: false,
+    }
+  };
+  res.json(manifest);
 });
 
 // Endpoint para InstallAddon de Stremio Web

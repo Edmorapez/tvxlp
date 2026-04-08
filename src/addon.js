@@ -21,7 +21,6 @@ const builder = new addonBuilder({
   idPrefixes: ["tt", "tvxlp-"],
   behaviorHints: { configurable: true },
 });
-
 // ─── Stream Handler ───────────────────────────────────────────────────────────
 // El ID llega como: "contenidoId:suscripcionId"
 // Ejemplo: "1001:user_test_xalapa"
