@@ -1,4 +1,4 @@
-const { db, admin } = require("../firebase");
+const { db, admin } = require("../src/firebase");
 
 // ─── Valida si un usuario puede ver contenido ────────────────────────────────
 async function validarSuscripcion(suscripcionId) {

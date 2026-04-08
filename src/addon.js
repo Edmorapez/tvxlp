@@ -1,5 +1,6 @@
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
-const { validarSuscripcion } = require("../../services/suscripciones");
+const { validarSuscripcion } = require("../services/suscripciones");
+
 
 // ─── Manifest del Addon ───────────────────────────────────────────────────────
 const builder = new addonBuilder({
@@ -7,7 +8,7 @@ const builder = new addonBuilder({
   version:     "1.0.0",
   name:        "TVXLP Stream",
   description: "Tu cine sin límites",
-  resources:   ["stream", "catalog", "meta"],
+  resources:   ["stream", "catalog"],
   types:       ["movie", "series", "channel"],
   catalogs: [
     {

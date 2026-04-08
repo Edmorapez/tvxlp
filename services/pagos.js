@@ -1,4 +1,4 @@
-const { db, admin } = require("../firebase");
+const { db, admin } = require("../src/firebase");
 const { activarSuscripcion } = require("./suscripciones");
 
 // ─── Crea un pago pendiente en Firestore ─────────────────────────────────────

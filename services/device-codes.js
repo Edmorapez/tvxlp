@@ -1,5 +1,6 @@
 const crypto  = require("crypto");
-const { db, admin } = require("../firebase");
+const { db, admin } = require("../src/firebase");
+
 
 // ─── Genera un código HMAC de 6 caracteres ───────────────────────────────────
 function generarCodigoHMAC(deviceId) {
