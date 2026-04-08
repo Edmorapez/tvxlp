@@ -70,8 +70,9 @@ app.get("/addon", (req, res) => {
 
 app.get("/addon/:resource/:type/:id.json", async (req, res) => {
   const { resource, type, id } = req.params;
+  const extra = req.query;
   try {
-    const result = await addonInterface.get({ resource, type, id });
+    const result = await addonInterface.get({ resource, type, id, extra });
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
