@@ -1,85 +1,52 @@
 require("dotenv").config();
-require("./firebase"); // Inicializa Firebase al arrancar
+require("./firebase");
 
-const express         = require("express");
-const { serveHTTP }   = require("stremio-addon-sdk");
-const { builder } = require("./addon");
+const express           = require("express");
+const { builder }       = require("./addon");
 const { helmetMiddleware, corsMiddleware, limiterGeneral } = require("../middleware/seguridad");
 const deviceCodesRouter = require("../routes/device-codes");
 const webhooksRouter    = require("../routes/webhooks");
 
-const app = express();
+const app            = express();
+const addonInterface = builder.getInterface();
+const addonRouter = require("stremio-addon-sdk/src/getRouter");
 
-// ─── Middlewares globales ─────────────────────────────────────────────────────
+// ─── Middlewares ──────────────────────────────────────────────────────────────
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.use(express.json());
 app.use("/api/", limiterGeneral);
 
-// ─── Rutas ────────────────────────────────────────────────────────────────────
+// ─── Rutas API ────────────────────────────────────────────────────────────────
 app.use("/api/device-code", deviceCodesRouter);
 app.use("/api/webhook",     webhooksRouter);
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get("/health", (req, res) => {
+  res.json({ status: "ok", proyecto: "TVXLP", timestamp: new Date().toISOString() });
+});
+
+// ─── Activar TV ───────────────────────────────────────────────────────────────
+app.get("/activar", (req, res) => {
+  res.send(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+    <title>TVXLP - Activar</title></head>
+    <body style="background:#000;color:#fff;font-family:Arial;text-align:center;padding:40px">
+    <h1 style="color:#e50914">TVXLP</h1><p>Panel de activación - próximamente</p>
+    </body></html>`);
+});
+
+// ─── Manifest con transportUrl ────────────────────────────────────────────────
+app.get("/addon/manifest.json", (req, res) => {
   res.json({
-    status:    "ok",
-    proyecto:  "TVXLP",
-    timestamp: new Date().toISOString(),
+    ...addonInterface.manifest,
+    transportUrl: "https://tvxlp-backend.onrender.com/addon/manifest.json",
   });
 });
 
-// ─── Pantalla TV (activación por código) ─────────────────────────────────────
-app.get("/activar", (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>TVXLP - Activar</title>
-    </head>
-    <body style="background:#000;color:#fff;font-family:Arial;text-align:center;padding:40px">
-      <h1 style="color:#e50914">TVXLP</h1>
-      <p>Panel de activación - próximamente</p>
-    </body>
-    </html>
-  `);
-});
+// ─── Addon SDK Router (maneja catalog, stream, meta) ─────────────────────────
+app.use("/addon", addonRouter(addonInterface));
 
-// ─── Stremio Addon ────────────────────────────────────────────────────────────
-// El addon corre en el mismo servidor en /addon
-const addonInterface = builder.getInterface();
-
-app.get("/addon/manifest.json", (req, res) => {
-  const manifest = {
-    ...addonInterface.manifest,
-    transportUrl: "https://tvxlp-backend.onrender.com/addon/manifest.json",
-    behaviorHints: {
-      ...addonInterface.manifest.behaviorHints,
-      configurable: false,
-    }
-  };
-  res.json(manifest);
-});
-
-// Endpoint para InstallAddon de Stremio Web
-app.get("/addon", (req, res) => {
-  res.json({ manifest: addonInterface.manifest });
-});
-
-app.get("/addon/:resource/:type/:id.json", async (req, res) => {
-  const { resource, type, id } = req.params;
-  const extra = req.query;
-  try {
-    const result = await addonInterface.get({ resource, type, id, extra });
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ─── Arrancar servidor ────────────────────────────────────────────────────────
+// ─── Arrancar ─────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 7000;
 app.listen(PORT, () => {
   console.log(`
@@ -88,7 +55,6 @@ app.listen(PORT, () => {
   Puerto:      ${PORT}
   Health:      http://localhost:${PORT}/health
   Addon:       http://localhost:${PORT}/addon/manifest.json
-  Activación:  http://localhost:${PORT}/api/device-code
-  Webhook:     http://localhost:${PORT}/api/webhook/conekta
+  Catálogo:    http://localhost:${PORT}/addon/catalog/channel/tvxlp-live.json
   `);
 });
