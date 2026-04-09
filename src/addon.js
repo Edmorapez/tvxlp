@@ -93,33 +93,33 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     // ── Películas ────────────────────────────────────────────────────────────
-    if (type === "movie" && id === "tvxlp-movies") {
-      const [peliculas, cats] = await Promise.all([
-        fetchIPTV("get_vod_streams"),
-        fetchIPTV("get_vod_categories").then((c) =>
-          Object.fromEntries(c.map((x) => [x.category_id, x.category_name]))
-        ),
-      ]);
+  if (type === "movie" && id === "tvxlp-movies") {
+    const [peliculas, cats] = await Promise.all([
+      fetchIPTV("get_vod_streams"),
+      fetchIPTV("get_vod_categories").then((c) =>
+        Object.fromEntries(c.map((x) => [x.category_id, x.category_name]))
+      ),
+    ]);
 
-      let filtrados = peliculas;
-      if (genre)  filtrados = filtrados.filter((p) => cats[p.category_id] === genre);
-      if (search) filtrados = filtrados.filter((p) => p.name.toLowerCase().includes(search));
+    let filtrados = peliculas;
+    if (genre)  filtrados = filtrados.filter((p) => cats[p.category_id] === genre);
+    if (search) filtrados = filtrados.filter((p) => p.name.toLowerCase().includes(search));
 
-      const metas = filtrados.slice(skip, skip + limit).map((p) => ({
-        id:          `tvxlp-movie-${p.stream_id}`,
-        type:        "movie",
-        name:        p.name,
-        poster:      p.stream_icon || "",
-        genres:      p.genre ? p.genre.split(",").map((g) => g.trim()) : [cats[p.category_id] || "General"],
-        description: p.plot || "",
-        releaseInfo: p.year || "",
-        imdbRating:  p.rating ? String(p.rating) : "",
-        director:    p.director || "",
-        cast:        p.cast ? p.cast.split(",").map((a) => a.trim()) : [],
-      }));
+    const metas = filtrados.slice(skip, skip + 50).map((p) => ({
+      id:          `tvxlp-movie-${p.stream_id}`,
+      type:        "movie",
+      name:        p.name,
+      poster:      p.stream_icon || "",
+      genres:      p.genre ? p.genre.split(",").map((g) => g.trim()) : [cats[p.category_id] || "General"],
+      description: p.plot || "",
+      releaseInfo: p.year || "",
+      imdbRating:  p.rating ? String(p.rating) : "",
+      director:    p.director || "",
+      cast:        p.cast ? p.cast.split(",").map((a) => a.trim()) : [],
+    }));
 
-      return { metas };
-    }
+    return { metas };
+  }
 
     // ── Series ───────────────────────────────────────────────────────────────
     if (type === "series" && id === "tvxlp-series") {
@@ -159,6 +159,17 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
 
 // ─── Meta Handler ─────────────────────────────────────────────────────────────
 builder.defineMetaHandler(async ({ type, id }) => {
+    if (type === "channel") {
+    const streamId = id.replace("tvxlp-live-", "");
+    return {
+      meta: {
+        id,
+        type:   "channel",
+        name:   id,
+        poster: "",
+      }
+    };
+  }
   try {
     const { base, user, pass } = IPTV();
 
