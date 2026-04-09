@@ -130,7 +130,7 @@ app.get("/activar", (req, res) => {
 app.get("/addon/manifest.json", (req, res) => {
   res.json({
     ...addonInterface.manifest,
-    transportUrl: "https://tvxlp-backend.onrender.com/addon/manifest.json",
+    transportUrl: "https://app.tvxlp.com/addon/manifest.json",
   });
 });
 
