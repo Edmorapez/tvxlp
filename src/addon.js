@@ -93,33 +93,43 @@ builder.defineCatalogHandler(async ({ type, id, extra }) => {
     }
 
     // ── Películas ────────────────────────────────────────────────────────────
-  if (type === "movie" && id === "tvxlp-movies") {
-    const [peliculas, cats] = await Promise.all([
-      fetchIPTV("get_vod_streams"),
-      fetchIPTV("get_vod_categories").then((c) =>
-        Object.fromEntries(c.map((x) => [x.category_id, x.category_name]))
-      ),
-    ]);
+if (type === "movie" && id === "tvxlp-movies") {
+  const cats = await fetchIPTV("get_vod_categories").then((c) =>
+    Object.fromEntries(c.map((x) => [x.category_id, x.category_name]))
+  );
 
-    let filtrados = peliculas;
-    if (genre)  filtrados = filtrados.filter((p) => cats[p.category_id] === genre);
-    if (search) filtrados = filtrados.filter((p) => p.name.toLowerCase().includes(search));
+  let peliculas = [];
 
-    const metas = filtrados.slice(skip, skip + 50).map((p) => ({
-      id:          `tvxlp-movie-${p.stream_id}`,
-      type:        "movie",
-      name:        p.name,
-      poster:      p.stream_icon || "",
-      genres:      p.genre ? p.genre.split(",").map((g) => g.trim()) : [cats[p.category_id] || "General"],
-      description: p.plot || "",
-      releaseInfo: p.year || "",
-      imdbRating:  p.rating ? String(p.rating) : "",
-      director:    p.director || "",
-      cast:        p.cast ? p.cast.split(",").map((a) => a.trim()) : [],
-    }));
-
-    return { metas };
+  if (genre) {
+    const catId = Object.entries(cats).find(([, name]) => name === genre)?.[0];
+    if (catId) {
+      peliculas = await fetchIPTV("get_vod_streams", `&category_id=${catId}`);
+    }
+  } else if (search) {
+    peliculas = await fetchIPTV("get_vod_streams", `&category_id=385`);
+    peliculas = peliculas.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase())
+    );
+  } else {
+    // Sin filtro: trae solo Super Estrenos (category_id=385)
+    peliculas = await fetchIPTV("get_vod_streams", `&category_id=385`);
   }
+
+  const metas = peliculas.slice(skip, skip + 50).map((p) => ({
+    id:          `tvxlp-movie-${p.stream_id}`,
+    type:        "movie",
+    name:        p.name,
+    poster:      p.stream_icon || "",
+    genres:      p.genre ? p.genre.split(",").map((g) => g.trim()) : [cats[p.category_id] || "General"],
+    description: p.plot || "",
+    releaseInfo: p.year || "",
+    imdbRating:  p.rating ? String(p.rating) : "",
+    director:    p.director || "",
+    cast:        p.cast ? p.cast.split(",").map((a) => a.trim()) : [],
+  }));
+
+  return { metas };
+}
 
     // ── Series ───────────────────────────────────────────────────────────────
     if (type === "series" && id === "tvxlp-series") {
